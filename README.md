@@ -1,118 +1,78 @@
-# Drive Icon Customizer
+# Drive Icon Customizer Script
 
 ## Overview
-**Drive Icon Customizer** is a Windows batch script that customizes drive icons in File Explorer by assigning `.ico` files from single-letter folders (`A`, `B`, `C`, etc.) to their corresponding drives (`A:`, `B:`, `C:`, etc.). The script updates the Windows registry under `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DriveIcons` to set the `(Default)` value of each drive’s `DefaultIcon` subkey to the path of the first `.ico` file found in the respective folder.
-
-### Use Case
-This script is designed for users who want to personalize the appearance of their drives in Windows File Explorer. For example:
-- Assign a custom icon to drive `C:` by placing an `icon.ico` file in a folder named `C`.
-- Automatically apply icons for multiple drives (`A:` to `Z:`) based on `.ico` files in corresponding folders.
-
-The script is useful for system administrators, enthusiasts, or anyone managing multiple drives who wants a visual distinction for each drive.
+This batch script allows you to customize drive icons in Windows by applying `.ico` files from specially named folders in the script's directory. It modifies the Windows Registry to set custom icons for drive letters (A-Z) based on the folder structure and icon files provided.
 
 ## Prerequisites
-- **Operating System**: Windows (tested on Windows 10/11; should work on Windows 7 and later).
-- **Administrative Privileges**: The script requires Administrator rights to modify the registry (`HKEY_LOCAL_MACHINE`).
-- **Folder Structure**: Single-letter folders (`A`, `B`, `C`, etc.) containing at least one `.ico` file each, located in the same directory as the script.
-- **VBScript**: Enabled by default on Windows, used for self-elevation.
+- **Windows Operating System**: The script is designed for Windows environments.
+- **Administrative Privileges**: The script requires elevated permissions to modify the Windows Registry.
+- **Icon Files**: You need `.ico` files placed in appropriately named folders (see below).
 
-## Installation
-1. **Download the Script**:
-   - Save the script as `applyIcons.bat` (or any preferred name with a `.bat` extension).
-
-2. **Set Up Folder Structure**:
-   - Create a directory (e.g., `C:\ICONS`).
-   - Place the script in this directory.
-   - Create single-letter folders (`A`, `B`, `C`, etc.) in the same directory.
-   - Add at least one `.ico` file to each folder corresponding to the drive you want to customize (e.g., `C:\ICONS\A\icon.ico` for drive `A:`).
-
-3. **Verify `.ico` Files**:
-   - Ensure the `.ico` files are valid icon files compatible with Windows File Explorer.
-
-## Usage
-1. **Run the Script**:
-   - Double-click `applyIcons.bat`, or run it from a Command Prompt.
-   - If not already elevated, a User Account Control (UAC) prompt will appear. Click **Yes** to grant administrative privileges.
-   - Alternatively, right-click the script and select **Run as administrator**.
-
-2. **What the Script Does**:
-   - Checks for administrative privileges and self-elevates if needed.
-   - Scans for single-letter folders (`A` to `Z`) in the script’s directory.
-   - Deletes any existing registry keys under `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DriveIcons` for each letter.
-   - For each existing folder:
-     - Finds the first `.ico` file.
-     - Sets the `(Default)` value of `DriveIcons\<Letter>\DefaultIcon` to the `.ico` file path.
-     - Records the folder name and `.ico` path in the `OBJ` variable.
-
-3. **Apply Changes**:
-   - Drive icon changes may not appear immediately. To apply them:
-     - Restart File Explorer.
-     - Alternatively, log off and log back on, or restart your computer.
+## How It Works
+1. **Checks for Admin Privileges**: The script verifies if it is running with administrative rights. If not, it relaunches itself with elevated permissions using a temporary VBScript.
+2. **Warns the User**: Displays a warning about resetting drive icons to Windows defaults and allows the user to cancel by pressing the ESC key.
+3. **Deletes Existing Icons**: Removes any existing custom drive icon configurations from the Registry under `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DriveIcons`.
+4. **Scans for Configuration Folders**: Looks for folders in the script's directory named after single drive letters (e.g., `A`, `B`, `C`, etc.).
+5. **Applies New Icons**: For each valid folder containing an `.ico` file, the script updates the Registry to set the icon for the corresponding drive letter.
+6. **Feedback**: Provides feedback on the number of icons deleted, folders found, and icons applied, including any errors.
 
 ## Folder Structure
-The script expects the following directory layout:
+To customize a drive's icon, create a folder in the same directory as the script named after the drive letter (e.g., `A`, `B`, etc.). Place a single `.ico` file inside that folder. For example:
 ```
-C:\ICONS\
-├── applyIcons.bat
-├── A\
-│   └── icon.ico
-├── B\
-│   └── test.ico
-├── C\
-│   └── (no .ico files, ignored for registry)
-...
+script_directory/
+├── A/
+│   └── custom_icon.ico
+├── B/
+│   └── another_icon.ico
+├── script.bat
+└── README.md
 ```
-- Each single-letter folder (`A`, `B`, `C`, etc.) corresponds to a drive letter.
-- The first `.ico` file in each folder is used for the drive’s icon.
-- Non-existent folders or folders without `.ico` files are skipped.
+- The script will use the first `.ico` file found in each folder.
+- If no `.ico` file is found in a folder, that drive's icon will not be modified.
+- If no valid folders are found, the script will reset all drive icons to Windows defaults.
 
-## Example Output
-Assuming the script is in `C:\ICONS\` with folders `A` (containing `icon.ico`), `B` (containing `test.ico`), and `C` (no `.ico` files), the output might look like:
-```
-Running with administrative privileges.
-The operation completed successfully.
-The operation completed successfully.
-The operation completed successfully.
-Icons applied successfully.
-Exiting...
+## Usage
+1. Place the script (`apply icons.bat`) in a directory.
+2. Create folders named after the drive letters you want to customize (e.g., `A`, `B`, etc.).
+3. Place one `.ico` file in each folder.
+4. Run the script by double-clicking it or executing it from the Command Prompt.
+5. Follow the on-screen prompts:
+   - Press any key to continue or ESC to cancel.
+6. The script will process the folders, update the Registry, and display the results.
 
+## Example
+Suppose you have the following setup:
 ```
-
-## Troubleshooting
-- **UAC Prompt Not Appearing**:
-  - Ensure VBScript is enabled (default on Windows).
-  - Run the script manually as Administrator by right-clicking and selecting **Run as administrator**.
-- **No Folders Processed**:
-  - Verify the script is in the correct directory (e.g., `C:\Scripts`).
-  - Run `dir C:\ICONS
-\* /a:d` in a Command Prompt to confirm single-letter folders exist.
-- **Registry Errors**:
-  - Check if the script is running as Administrator.
-  - Open `regedit` and navigate to `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DriveIcons` to verify key changes.
-  - If “ERROR: Failed to set (Default) value” appears, ensure the `.ico` file path is valid and accessible.
-- **Icons Not Updating**:
-  - Restart File Explorer or reboot the system to apply registry changes.
-  - Ensure `.ico` files are valid icon files (test by manually setting a drive icon in `regedit`).
-- **Unexpected Output**:
-  - Share the script’s console output with support for diagnosis.
+C:\DriveIcons\
+├── C/
+│   └── drive_c.ico
+├── D/
+│   └── drive_d.ico
+├── script.bat
+└── README.md
+```
+Running `script.bat` will:
+- Delete any existing custom icons for drives A-Z in the Registry.
+- Detect folders `C` and `D` with their respective `.ico` files.
+- Set the icon for drive `C` to `drive_c.ico` and drive `D` to `drive_d.ico` in the Registry.
 
 ## Notes
-- **Registry Backup**: Before running, consider backing up the registry:
-  - Open `regedit`, navigate to `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DriveIcons`, right-click, and select **Export**.
-- **Delimiter Usage**: The script uses `;` to separate folder-icon pairs and `|` to separate folder names from paths in the `OBJ` variable.
-- **Performance**: The script processes 26 letters (`A` to `Z`), but only existing folders are counted and processed, ensuring efficiency.
-- **Safety**: Modifying the registry can affect system behavior. Ensure `.ico` paths are correct to avoid broken drive icons.
+- **Backup**: Modifying the Registry can affect system behavior. Back up the Registry or create a system restore point before running the script.
+- **Single Icon per Folder**: The script uses the first `.ico` file found in each folder. Ensure only one `.ico` file is present to avoid ambiguity.
+- **Error Handling**: If an error occurs while setting an icon, the script will notify you to rerun it.
+- **Default Icons**: If no configuration folders are found, all drive icons revert to Windows defaults.
+- **Timeout**: The script includes brief pauses (10ms) to ensure smooth execution and readability. These can be adjusted in the `:wait` subroutine if needed.
+
+## Troubleshooting
+- **Script Doesn't Run**: Ensure you have administrative privileges. The script will attempt to elevate itself, but you may need to right-click and select "Run as administrator."
+- **Icons Not Applied**: Verify that:
+  - The folders are named correctly (single letters A-Z).
+  - Each folder contains a valid `.ico` file.
+  - The script has write access to the Registry.
+- **Errors in Registry**: If errors occur, try running the script again or check the Registry manually at `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DriveIcons`.
+
+## Disclaimer
+This script modifies the Windows Registry, which can impact system functionality if used incorrectly. Use it at your own risk. The author is not responsible for any damage or data loss caused by running this script.
 
 ## License
-This script is provided as-is without a formal license. You are free to use, modify, and distribute it for personal or commercial purposes. Please ensure you understand the script’s actions before running it.
-
-## Support
-For issues, questions, or feature requests, please share:
-- The script’s console output.
-- The folder structure (`dir C:\ICONS\* /a:d` and `dir C:\ICONS\*\*.ico` results).
-- Your Windows version (e.g., Windows 10, 11).
-
-Contact the script author or post an issue on the repository (if hosted).
-
----
-*Generated on April 17, 2025*
+This script is provided as-is, with no warranty. You are free to use, modify, and distribute it under the [MIT License](https://opensource.org/licenses/MIT).
